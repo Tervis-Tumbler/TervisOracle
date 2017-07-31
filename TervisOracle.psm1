@@ -89,3 +89,11 @@ function Get-OracleIPAddresses {
         Select-Object -ExpandProperty IPAddress
     }
 }
+
+function Get-OracleCNAMEToDNSAMapping {
+    $OracleCNAME = Get-OracleCNAME
+
+    $OracleCNAME |
+    % { Resolve-DnsName -Name $_ -Type CNAME } |
+    Select-Object -Property Name, NameHost
+}
