@@ -83,11 +83,16 @@ function Get-OracleManagedServiceHostNeedingAccessToDNSName {
 
 function Get-OracleIPAddresses {
     $OracleCNAMEs = Get-OracleCNAME
-    foreach ($CNAME in $OracleCNAMEs) {
+    $DNSRecords = foreach ($CNAME in $OracleCNAMEs) {
         Resolve-DnsName -Name $CNAME |
-        Where-Object QueryType -EQ "A" |
-        Select-Object -ExpandProperty IPAddress
+        Where-Object QueryType -EQ "A" 
     }
+
+    $Sorted = $DNSRecords |
+    % {[Version]$_.IPAddress } |
+    Sort -Unique 
+    
+    $Sorted | % { $_.ToString() }
 }
 
 function Get-OracleCNAMEToDNSAMapping {
