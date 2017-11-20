@@ -11,6 +11,7 @@ rpodbee
 rpweblogic
 soaodbee
 soaweblogic
+obiapp
 "@ -split "`r`n"
 
 $OracleInfrastructureCNAMEHost = @"
