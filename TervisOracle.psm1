@@ -14,7 +14,6 @@ soaweblogic
 "@ -split "`r`n"
 
 $OracleInfrastructureCNAMEHost = @"
-DataLoadClassic
 OraDBARMT
 RemoteDesktopWebAccess
 "@ -split "`r`n"
@@ -83,7 +82,7 @@ function Get-OracleManagedServiceHostNeedingAccessToDNSName {
 
 function Get-OracleIPAddresses {
     $OracleCNAMEs = Get-OracleCNAME
-    foreach ($CNAME in $OralceCNAMEs) {
+    foreach ($CNAME in $OracleCNAMEs) {
         Resolve-DnsName -Name $CNAME |
         Where-Object QueryType -EQ "A" |
         Select-Object -ExpandProperty IPAddress
