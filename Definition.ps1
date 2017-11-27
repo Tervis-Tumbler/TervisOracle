@@ -61,7 +61,7 @@ INF-RDWebAcc01
 TFS2012
 SharePoint2007
 TrackIT
-INF-DC1
+INF-DC01
 INF-DC2
 INF-DC3
 "@ -split "`r`n"
@@ -71,7 +71,7 @@ INF-DC3
     DNSRecordType = "CNAME"
     Host = @"
 MESIIS
-MESSQ
+MESSQl
 "@ -split "`r`n"
     EnvironmentName = "Delta","Epsilon","Production"
 }

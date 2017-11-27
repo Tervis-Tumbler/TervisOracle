@@ -41,16 +41,6 @@ function Get-HostGroupHostIPAddress {
     $Sorted | % { $_.ToString() }
 }
 
-function Get-OracleCNAME {
-
-    foreach ($Environment in $EnvironmentsWithOracleApplications) {
-        $OracleAppliationCNAMEHost | Get-TervisDNSName -EnvironmentName $Environment
-    }
-
-    $OracleZetaCNAMEHost | Get-TervisDNSName -EnvironmentName Zeta
-    $OracleInfrastructureCNAMEHost | Get-TervisDNSName -EnvironmentName Infrastructure
-}
-
 function Test-OracleCNAME {
     $OracleCNAMEs = Get-OracleCNAME
     foreach ($CNAME in $OralceCNAMEs) {
@@ -58,32 +48,13 @@ function Test-OracleCNAME {
     }
 }
 
-function Get-OracleManagedServiceHostNeedingAccessToDNSARecord {    
-    $OracleContractorUsedResourcesOutsideOracleSystems | Get-TervisDNSName
-}
+function Get-HostGroupCNAMEToDNSAMapping {
+    Param (
+        [Parameter(Mandatory)]$HostGroupName
+    )
+    $DNSNames = Get-HostGroupHostDNSName -HostGroupName $HostGroupName
 
-function Get-OracleManagedServiceHostNeedingAccessToDNSName {
-    $OracleCNAME = Get-OracleCNAME
-}
-
-function Get-OracleIPAddresses {
-    $OracleCNAMEs = Get-OracleCNAME
-    $DNSRecords = foreach ($CNAME in $OracleCNAMEs) {
-        Resolve-DnsName -Name $CNAME |
-        Where-Object QueryType -EQ "A" 
-    }
-
-    $Sorted = $DNSRecords |
-    % {[Version]$_.IPAddress } |
-    Sort -Unique 
-    
-    $Sorted | % { $_.ToString() }
-}
-
-function Get-OracleCNAMEToDNSAMapping {
-    $OracleCNAME = Get-OracleCNAME
-
-    $OracleCNAME |
+    $DNSNames |
     % { Resolve-DnsName -Name $_ -Type CNAME } |
     Select-Object -Property Name, NameHost
 }
