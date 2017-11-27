@@ -1,45 +1,45 @@
-﻿$OracleAppliationCNAMEHost = @"
-apexweblogic
-discoverer
-ebsias
-ebsodbee
-infadac
-obiaodbee
-obieeweblogic
-rpias
-rpodbee
-rpweblogic
-soaodbee
-soaweblogic
-obiapp
-"@ -split "`r`n"
+﻿$ModulePath = (Get-Module -ListAvailable TervisOracle).ModuleBase
+. $ModulePath\Definition.ps1
 
-$OracleInfrastructureCNAMEHost = @"
-OraDBARMT
-RemoteDesktopWebAccess
-"@ -split "`r`n"
+function Get-HostGroupHostDNSName {
+    Param (
+        [Parameter(Mandatory,ValueFromPipeline)]$HostGroupName
+    )
+    process {
+        $HostGroup = $HostGroupDefinition | 
+        Where-Object Name -EQ $HostGroupName
 
-$OracleZetaCNAMEHost = @"
-ebsias
-ebsodbee
-rpias
-rpodbee
-rpweblogic
-"@ -split "`r`n"
+        if ($HostGroup.HostGroupName) {
+            $HostGroup.HostGroupName | Get-HostGroupHostDNSName
+        }
 
-$OracleContractorUsedResourcesOutsideOracleSystems = @"
-rdbrocker2012r2
-rdgateway2012r2
-INF-RDWebAcc01
-TFS2012
-SharePoint2007
-TrackIT
-INF-DC1
-INF-DC2
-INF-DC3
-"@ -split "`r`n"
+        if ($HostGroup.EnvironmentName) {
+            foreach ($EnvironmentName in $HostGroup.EnvironmentName) {
+                $HostGroup.Host | Get-TervisDNSName -EnvironmentName $EnvironmentName                
+            }
+        } elseif ($HostGroup.Host) {
+            $HostGroup.Host | Get-TervisDNSName
+        }
+    }
+}
 
-$EnvironmentsWithOracleApplications = "Delta","Epsilon","Production"
+function Get-HostGroupHostIPAddress {
+    Param (
+        [Parameter(Mandatory)]$HostGroupName
+    )
+    $DNSNames = Get-HostGroupHostDNSName -HostGroupName $HostGroupName
+
+    $DNSRecords = foreach ($DNSName in $DNSNames) {
+        Resolve-DnsName -Name $DNSName |
+        Where-Object QueryType -EQ "A" 
+    }
+
+    $Sorted = $DNSRecords |
+    % {[Version]$_.IPAddress } |
+    Sort -Unique 
+    
+    $Sorted | % { $_.ToString() }
+}
 
 function Get-OracleCNAME {
 
@@ -60,21 +60,6 @@ function Test-OracleCNAME {
 
 function Get-OracleManagedServiceHostNeedingAccessToDNSARecord {    
     $OracleContractorUsedResourcesOutsideOracleSystems | Get-TervisDNSName
-}
-
-function Get-TervisDNSName {
-    param (
-        [Parameter(Mandatory,ValueFromPipeline)]$Host,
-        $EnvironmentName
-    )
-    begin {
-        if ( -not $Script:ADDomain) { 
-            $Script:ADDomain = Get-ADDomain
-        }
-    }
-    process {
-        "$Host$(if($EnvironmentName){".$EnvironmentName"}).$($Script:ADDomain.DNSRoot)"
-    }
 }
 
 function Get-OracleManagedServiceHostNeedingAccessToDNSName {
